@@ -178,35 +178,36 @@
 		<cfreturn this />
 	</cffunction>
 	
-	<cffunction name="sms" access="public" output="false" returntype="any" hint="Sends an SMS message to a phone number during a phone call.">	
+	<cffunction name="message" access="public" output="false" returntype="any" hint="Sends an SMS message to a phone number during a phone call.">
+		<cfargument name="body" type="string" required="true" hint="The body of the message in response to TWIML Request." />
 		<cfargument name="to" type="string" required="false" default="" hint="The 'to' attribute takes a valid phone number as a value. Twilio will send an SMS message to this number. When sending an SMS during an incoming call, 'to' defaults to the caller. When sending an SMS during an outgoing call, 'to' defaults to the called party. The value of 'to' must be a valid phone number. " />
 		<cfargument name="from" type="string" required="false" default="" hint="The 'from' attribute takes a valid phone number as an argument. This number must be a phone number that you've purchased from or ported to Twilio. When sending an SMS during an incoming call, 'from' defaults to the called party. When sending an SMS during an outgoing call, 'from' defaults to the calling party. This number must be an SMS-capable local phone number assigned to your account." />
 		<cfargument name="action" type="string" required="false" default="" hint="The 'action' attribute takes a URL as an argument. After processing the <Sms> verb, Twilio will make a GET or POST request to this URL with the form parameters 'SmsStatus' and 'SmsSid'. Using an 'action' URL, your application can receive synchronous notification that the message was successfully enqueued." />
 		<cfargument name="method" type="string" required="false" default="" hint="The 'method' attribute takes the value 'GET' or 'POST'. This tells Twilio whether to request the 'action' URL via HTTP GET or POST. This attribute is modeled after the HTML form 'method' attribute. 'POST' is the default value." />
 		<cfargument name="statusCallback" type="string" required="false" default="" hint="The 'statusCallback' attribute takes a URL as an argument. When the SMS message is actually sent, or if sending fails, Twilio will make an asynchronous POST request to this URL with the parameters 'SmsStatus' and 'SmsSid'. Note, 'statusCallback' always uses HTTP POST to request the given url." />
-		
+
 		<cfset var properties = StructNew() />
-		
-		<!--- Validate the incoming arguments... --->		
+
+		<!--- Validate the incoming arguments... --->
 		<cfif len(trim(Arguments.to)) AND NOT isValid("telephone", Arguments.to)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.to# is not a valid value for the to attribute in sms verb.  Values must be valid phone numbers." />
 		</cfif>
 		<cfif len(trim(Arguments.from)) AND NOT isValid("telephone", Arguments.from)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.from# is not a valid value for the from attribute in sms verb.  Values must be valid phone numbers." />
-		</cfif>	
+		</cfif>
 		<cfif len(trim(Arguments.Method)) AND NOT ListFindNoCase("GET,POST", Arguments.Method)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.Method# is not a valid value for the method attribute in record verb.  Valid values are: get or post." />
 		</cfif>
-		
+
 		<!--- Build the properties... --->
 		<cfset properties["to"] = Arguments.to />
 		<cfset properties["from"] = Arguments.from />
 		<cfset properties["action"] = Arguments.action />
 		<cfset properties["method"] = Arguments.method />
 		<cfset properties["statusCallback"] = Arguments.statusCallback />
-		
+
 		<!--- Append this verb... --->
-		<cfset append(verb="Sms", body="", properties=properties) />
+		<cfset append(verb="Message", body=trim(arguments.body), properties=properties) />
 		<!--- Return and instance of this to allow for chaining... --->
 		<cfreturn this />
 	</cffunction>
