@@ -37,7 +37,7 @@
 		<cfset variables.instance.AuthToken = Arguments.authToken />
 		<cfset variables.instance.ApiVersion = Arguments.ApiVersion />
 		<cfset variables.instance.EndPoint = Arguments.EndPoint />
-		<cfset variables.instance.NestingPermissions["dial"] = "number,conference,client" />
+		<cfset variables.instance.NestingPermissions["dial"] = "number,conference,client,sip" />
 		<cfset variables.instance.NestingPermissions["gather"] = "say,play,pause" />
 		
 		<cfreturn this />
@@ -73,6 +73,37 @@
 		
 		<cfreturn this />
 	</cffunction>
+	
+	
+	<cffunction name="sipper" access="public" output="false" returntype="any" hint="Dial SIP stuff.">
+		<cfargument name="sip" type="string" required="true" hint="sip string" />
+		<cfargument name="method" type="string" required="false" default="GET"  hint="get, post"/>
+		<cfargument name="url" type="string" required="false" default="" hint="call screening url" />
+		<cfargument name="username" type="string" required="false" default="" hint="username"/>
+		<cfargument name="password" type="string" required="false" default=""  hint="password"/>
+		<cfargument name="childOf" type="string" required="false" default="dial" hint="The verb that this verb should be nested within." />
+
+		<cfset var properties = StructNew() />
+
+		<cfif isDefined("arguments.username")>
+			<cfset properties["username"] = Arguments.username />
+		</cfif>
+
+		<cfif isDefined("arguments.password")>
+			<cfset properties["password"] = Arguments.password />
+		</cfif>
+
+		<cfset properties["method"] = Arguments.method />
+
+		<cfif isDefined("arguments.url")>
+			<cfset properties["url"] = Arguments.url />
+		</cfif>
+		<!--- Append this verb...--->
+		<cfset append(verb="Sip", body=Arguments.sip, properties=properties, childOf=Arguments.childOf) />
+
+		<cfreturn this />
+	</cffunction>
+	
 	
 	<cffunction name="play" access="public" output="false" returntype="any" hint="Plays an audio file back to the caller. Twilio retrieves the file from a URL that you provide.">	
 		<cfargument name="url" type="string" required="true" hint="The URL of an audio file that Twilio will retrieve and play to the caller." />
