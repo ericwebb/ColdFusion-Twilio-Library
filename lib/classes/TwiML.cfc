@@ -1,4 +1,4 @@
-<!--- 
+	<!--- 
 	The MIT License (MIT)
 
 	Copyright (c) 2011 Jason Fill (@jasonfill)
@@ -170,6 +170,7 @@
 		<cfargument name="transcribe" type="string" required="false" default="" hint="The 'transcribe' attribute tells Twilio that you would like a text representation of the audio of the recording. Twilio will pass this recording to our speech-to-text engine and attempt to convert the audio to human readable text. " />
 		<cfargument name="transcribeCallback" type="string" required="false" default="" hint="The 'transcribeCallback' attribute is used in conjunction with the 'transcribe' attribute. It allows you to specify a URL to which Twilio will make an asynchronous POST request when the transcription is complete." />
 		<cfargument name="playBeep" type="string" required="false" default="" hint="The 'playBeep' attribute allows you to toggle between playing a sound before the start of a recording. If you set the value to 'false', no beep sound will be played." />
+		<cfargument name="trim" type="string" required="false" default="" hint="The 'transcribeCallback' attribute is used in conjunction with the 'transcribe' attribute. It allows you to specify a URL to which Twilio will make an asynchronous POST request when the transcription is complete." />
 		
 		<cfset var properties = StructNew() />
 		
@@ -192,6 +193,9 @@
 		<cfif len(trim(Arguments.PlayBeep)) AND NOT ListFindNoCase("true,false", Arguments.PlayBeep)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.PlayBeep# is not a valid value for the playBeep attribute in record verb.  Valid values are: true or false." />
 		</cfif>
+		<cfif len(trim(Arguments.trim)) AND NOT ListFindNoCase("trim-silence,do-not-trim", Arguments.trim)>
+			<cfthrow type="TwilioAttributeException" detail="#Arguments.trim# is not a valid value for the Trim attribute in record verb.  Valid values are: trim-silence, do-not-trim." />
+		</cfif>
 		
 		<!--- Build the properties... --->
 		<cfset properties["action"] = Arguments.action />
@@ -202,6 +206,7 @@
 		<cfset properties["transcribe"] = Arguments.transcribe />
 		<cfset properties["transcribeCallback"] = Arguments.transcribeCallback />
 		<cfset properties["playBeep"] = Arguments.playBeep />
+		<cfset properties["trim"] = Arguments.trim />
 		
 		<!--- Append this verb... --->
 		<cfset append(verb="Record", body="", properties=properties) />
@@ -281,6 +286,7 @@
 		<cfif len(trim(Arguments.trim)) AND NOT ListFindNoCase("trim-silence,do-not-trim", Arguments.trim)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.trim# is not a valid value for the Trim attribute in record verb.  Valid values are: trim-silence, do-not-trim." />
 		</cfif>
+		
 
 		<!--- Build the properties... --->
 		<cfset properties["action"] = Arguments.action />
