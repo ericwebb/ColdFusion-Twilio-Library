@@ -243,7 +243,7 @@
 		<cfreturn this />
 	</cffunction>
 	
-	<cffunction name="dial" access="public" output="false" returntype="any" hint="Connects the current caller to an another phone. If the called party picks up, the two parties are connected and can communicate until one hangs up. If the called party does not pick up, if a busy signal is received, or if the number doesn't exist, the dial verb will finish.">	
+	<cffunction name="dial" access="public" output="false" returntype="any" hint="Connects the current caller to an another phone. If the called party picks up, the two parties are connected and can communicate until one hangs up. If the called party does not pick up, if a busy signal is received, or if the number doesn't exist, the dial verb will finish.">
 		<cfargument name="number" type="string" required="false" default="" hint="The phone number to dial." />
 		<cfargument name="action" type="string" required="true" default="" hint="The 'action' attribute takes a URL as an argument. When the dialed call ends, Twilio will make a GET or POST request to this URL including the parameters below." />
 		<cfargument name="method" type="string" required="false" default="" hint="The 'method' attribute takes the value 'GET' or 'POST'. This tells Twilio whether to request the 'action' URL via HTTP GET or POST. This attribute is modeled after the HTML form 'method' attribute. 'POST' is the default value." />
@@ -251,10 +251,12 @@
 		<cfargument name="hangupOnStar" type="string" required="false" default="false" hint="The 'hangupOnStar' attribute lets the calling party hang up on the called party by pressing the '*' key on his phone. When two parties are connected using <Dial>, Twilio blocks execution of further verbs until the caller or called party hangs up. This feature allows the calling party to hang up on the called party without having to hang up her phone and ending her TwiML processing session. When the caller presses '*' Twilio will hang up on the called party. If an 'action' URL was provided, Twilio submits 'completed' as the 'DialCallStatus' to the URL and processes the response. If no 'action' was provided Twilio will continue on to the next verb in the current TwiML document." />
 		<cfargument name="timeLimit" type="string" required="false" default="" hint="The 'timeLimit' attribute sets the maximum duration of the <Dial> in seconds. For example, by setting a time limit of 120 seconds <Dial> will hang up on the called party automatically two minutes into the phone call. By default, there is a four hour time limit set on calls." />
 		<cfargument name="callerId" type="string" required="false" default="" hint="The 'callerId' attribute lets you specify the caller ID that will appear to the called party when Twilio calls. By default, when you put a <Dial> in your TwiML response to Twilio's inbound call request, the caller ID that the dialed party sees is the inbound caller's caller ID." />
+		<cfargument name="record" type="string" required="false" default="" hint="The 'transcribe' attribute tells Twilio that you would like a text representation of the audio of the recording. Twilio will pass this recording to our speech-to-text engine and attempt to convert the audio to human readable text. " />
+		<cfargument name="trim" type="string" required="false" default="" hint="The 'transcribeCallback' attribute is used in conjunction with the 'transcribe' attribute. It allows you to specify a URL to which Twilio will make an asynchronous POST request when the transcription is complete." />
 		
 		<cfset var properties = StructNew() />
-		
-		<!--- Validate the incoming arguments... --->		
+
+		<!--- Validate the incoming arguments... --->
 		<cfif len(trim(Arguments.number)) AND NOT isValid("telephone", Arguments.number)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.number# is not a valid value for the number attribute in dial verb.  Values must be valid phone numbers." />
 		</cfif>
@@ -266,27 +268,36 @@
 		</cfif>
 		<cfif len(trim(Arguments.hangupOnStar)) AND NOT ListFindNoCase("true,false", Arguments.hangupOnStar)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.hangupOnStar# is not a valid value for the hangupOnStar attribute in dial verb.  Valid values are: true or false." />
-		</cfif>	
+		</cfif>
 		<cfif len(trim(Arguments.timeLimit)) AND val(Arguments.timeLimit) LTE 0>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.timeLimit# is not a valid value for the timeLimit attribute in dial verb.  Valid values must be positive integers." />
 		</cfif>
 		<cfif len(trim(Arguments.callerId)) AND NOT isValid("telephone", Arguments.callerId)>
 			<cfthrow type="TwilioAttributeException" detail="#Arguments.callerId# is not a valid value for the callerId attribute in dial verb.  Values must be valid phone numbers." />
 		</cfif>
-		
-		<!--- Build the properties... --->		
+		<cfif len(trim(Arguments.record)) AND NOT ListFindNoCase("do-not-record,record-from-answer,record-from-ringing", trim(Arguments.record))>
+			<cfthrow type="TwilioAttributeException" detail="#Arguments.record# is not a valid value for the Record attribute in Dial verb.  Valid values are: do-not-record, record-from-answer, record-from-ringing." />
+		</cfif>
+		<cfif len(trim(Arguments.trim)) AND NOT ListFindNoCase("trim-silence,do-not-trim", Arguments.trim)>
+			<cfthrow type="TwilioAttributeException" detail="#Arguments.trim# is not a valid value for the Trim attribute in record verb.  Valid values are: trim-silence, do-not-trim." />
+		</cfif>
+
+		<!--- Build the properties... --->
 		<cfset properties["action"] = Arguments.action />
 		<cfset properties["method"] = Arguments.method />
 		<cfset properties["timeout"] = Arguments.timeout />
 		<cfset properties["hangupOnStar"] = Arguments.hangupOnStar />
 		<cfset properties["timeLimit"] = Arguments.timeLimit />
 		<cfset properties["callerId"] = Arguments.callerId />
+		<cfset properties["record"] = Arguments.record />
+		<cfset properties["trim"] = Arguments.trim />
 		
 		<!--- Append this verb... --->
 		<cfset append(verb="Dial", body=Arguments.number, properties=properties) />
 		<!--- Return and instance of this to allow for chaining... --->
 		<cfreturn this />
 	</cffunction>
+
 	
 	<cffunction name="number" access="public" output="false" returntype="any" hint="The <Dial> verb's <Number> noun specifies a phone number to dial. Using the noun's attributes you can specify particular behaviors that Twilio should apply when dialing the number.">	
 		<cfargument name="number" type="string" required="true" default="" hint="The phone number to dial." />
