@@ -37,22 +37,31 @@
 		</cfif>
 		
 		<cfset variables.Instance.ContentType = Arguments.Response.ResponseHeader["Content-Type"]  />
-		<cfset variables.Instance.ETag = Arguments.Response.ResponseHeader.etag  />
+
+		<cfif StructKeyExists(Arguments.Response.ResponseHeader, "etag")>
+			<cfset variables.Instance.ETag = Arguments.Response.ResponseHeader.etag   />
+		</cfif>	
+		
 		<cfif StructKeyExists(Arguments.Response.ResponseHeader, "Last-Modified")>
 			<cfset variables.Instance.LastModified = Arguments.Response.ResponseHeader["Last-Modified"]  />
 		</cfif>			
-		
-		<cfif Arguments.RequestObj.getResponseFormat() EQ "xml">
-			<cfset variables.instance.ResponseContent = XmlParse(Arguments.Response.fileContent) />
-			<cfset variables.Instance.ResponseString = Arguments.Response.fileContent  />
-		<cfelseif Arguments.RequestObj.getResponseFormat() EQ "json">
-			<cfset variables.instance.ResponseContent = DeserializeJSON(Arguments.Response.fileContent.toString()) />
-			<cfset variables.Instance.ResponseString = Arguments.Response.fileContent.toString()  />
-		<cfelse>
-			<cfset variables.Instance.ResponseString = Arguments.Response.fileContent  />
-			<cfset variables.Instance.ResponseContent = Arguments.Response.fileContent  />
-		</cfif>
 
+		<cfif variables.Instance.HttpStatusCode EQ '204'>
+				<cfset variables.instance.ResponseContent = " " />
+				<cfset variables.Instance.ResponseString = " "  />
+			<cfelse>		
+				<cfif Arguments.RequestObj.getResponseFormat() EQ "xml">
+					<cfset variables.instance.ResponseContent = XmlParse(Arguments.Response.fileContent) />
+					<cfset variables.Instance.ResponseString = Arguments.Response.fileContent  />
+				<cfelseif Arguments.RequestObj.getResponseFormat() EQ "json">
+					<cfset variables.instance.ResponseContent = DeserializeJSON(Arguments.Response.fileContent.toString()) />
+					<cfset variables.Instance.ResponseString = Arguments.Response.fileContent.toString()  />
+				<cfelse>
+					<cfset variables.Instance.ResponseString = Arguments.Response.fileContent  />
+					<cfset variables.Instance.ResponseContent = Arguments.Response.fileContent  />
+				</cfif>
+		</cfif>
+	
 		<cfreturn this />
 	</cffunction>
 	
